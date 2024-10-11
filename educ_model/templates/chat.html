@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <style>
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+        }
+        .chat-message {
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .chat-message.user {
+            background-color: #f1f1f1;
+        }
+        .chat-message.assistant {
+            background-color: #e6f2ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <h1 class="mb-4">AI Chat</h1>
+        <div class="chat-container border rounded p-3 mb-3">
+            {% for message in history %}
+            <div class="chat-message {% if loop.index % 2 == 0 %}user{% else %}assistant{% endif %} rounded mb-2">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        <form action="{{ url_for('chat') }}" method="post" class="d-flex">
+            <input type="text" name="question" class="form-control me-2" placeholder="Введите ваш вопрос">
+            <button type="submit" class="btn btn-primary">Ответить</button>
+        </form>
+        <button class="btn btn-secondary mt-2" onclick="saveChat()">Сохранить чат</button>
+        <button class="btn btn-success mt-2">Очистить историю</button>
+    </div>
+
+    <script>
+        function saveChat() {
+            fetch('{{ url_for("save_chat") }}', {
+                method: 'POST'
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'chat_history.txt';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Ошибка при сохранении чата:', error);
+            });
+        }
+    </script>
+</body>
+</html>
